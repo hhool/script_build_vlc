@@ -1,11 +1,8 @@
 FROM debian:bookworm-20230522-slim
 
-MAINTAINER VideoLAN roots <roots@videolan.org>
+LABEL maintainer="VideoLAN roots <roots@videolan.org>"
 
 ENV IMAGE_DATE=202306200801
-
-COPY buildsystem/crossfiles/ /opt/crossfiles/
-COPY buildsystem/patches /patches
 
 ENV ANDROID_NDK="/sdk/android-ndk" \
     ANDROID_SDK="/sdk/android-sdk-linux"
@@ -25,12 +22,14 @@ RUN groupadd --gid ${VIDEOLAN_CI_UID} videolan && \
     useradd --uid ${VIDEOLAN_CI_UID} --gid videolan --create-home --shell /bin/bash videolan && \
     echo "videolan:videolan" | chpasswd && \
     apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && \
     apt-get install --no-install-suggests --no-install-recommends -y \
     openjdk-17-jdk-headless ca-certificates autoconf m4 automake ant autopoint bison \
     flex build-essential libtool libtool-bin patch pkg-config cmake meson \
     git yasm ragel g++ gettext ninja-build \
     wget expect unzip python3 \
     locales libltdl-dev curl nasm && \
+    dpkg-reconfigure locales && \
     apt-get clean -y && rm -rf /var/lib/apt/lists/* && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     echo "export ANDROID_NDK=${ANDROID_NDK}" >> /etc/profile.d/vlc_env.sh && \
@@ -57,21 +56,9 @@ RUN groupadd --gid ${VIDEOLAN_CI_UID} videolan && \
     cd / && \
     cd sdk/android-sdk-linux && \
     cmdline-tools/bin/sdkmanager --sdk_root=/sdk/android-sdk-linux/ "build-tools;26.0.1" "platform-tools" "platforms;android-26" && \
-    chown -R videolan /sdk && \
-    mkdir /build && cd /build && \
-    PROTOBUF_VERSION=3.1.0 && \
-    PROTOBUF_SHA256=51ceea9957c875bdedeb1f64396b5b0f3864fe830eed6a2d9c066448373ea2d6 && \
-    wget -q https://github.com/google/protobuf/releases/download/v$PROTOBUF_VERSION/protobuf-cpp-$PROTOBUF_VERSION.tar.gz && \
-    echo $PROTOBUF_SHA256 protobuf-cpp-$PROTOBUF_VERSION.tar.gz | sha256sum -c && \
-    tar xzfo protobuf-cpp-$PROTOBUF_VERSION.tar.gz && \
-    cd protobuf-$PROTOBUF_VERSION && \
-    patch -p1 < /patches/protobuf-fix-build.patch && \
-    patch -p1 < /patches/protobuf-include-algorithm.patch && \
-    cmake  -S cmake -B build -DBUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_EXAMPLES=OFF && \
-    cmake --build build --parallel $CORES && cmake --install build --prefix /opt/tools && \
-    rm -rf /build
+    chown -R videolan /sdk
 
-ENV LANG en_US.UTF-8
+ENV LANG=en_US.UTF-8
 USER videolan
 
 RUN git config --global user.name "VLC Android" && \

@@ -4,16 +4,14 @@
 
 ### Prerequisites
 
-- Host OS: Ubuntu 20.04 LTS, 64-bit. 
-  
-  Github [codespaces](https://github.com/codespaces)-blank image is recommended.
-  
-- Android [SDK](https://developer.android.com/studio) latest version.
+- Host OS: Ubuntu 20.04 LTS, x86_64 64-bit. 16G
 
-- Android [NDK](https://developer.android.com/ndk/downloads) r21e. 
+  Github [codespaces](https://github.com/codespaces)-blank image is recommended.
+- Android [SDK](https://developer.android.com/studio) latest version.
+- Android [NDK](https://developer.android.com/ndk/downloads) r21e.
 - Android Studio latest version.
-  
-### Steps
+
+#### Build On [codespaces](https://github.com/codespaces)-blank image
 
 Github [codespaces](https://github.com/codespaces)-blank image 8Core 32GB RAM 64GB SSD is recommended.
 
@@ -32,7 +30,7 @@ apt-get install --no-install-suggests --no-install-recommends -y \
     flex build-essential libtool libtool-bin patch pkg-config cmake meson \
     git yasm ragel g++ gettext ninja-build \
     wget expect unzip python3 \
-    locales libltdl-dev curl nasm && pip3 install meson==1.5.2\
+    locales libltdl-dev curl nasm \
     apt-get clean -y &&  rm -rf /var/lib/apt/lists/* && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ```
@@ -74,12 +72,24 @@ rm -rf  /home/codespace/java/current && ln -s /home/codespace/java/17.0.13-ms/ /
 export ANDROID_SDK=/sdk/android-sdk-linux
 export ANDROID_NDK=/sdk/android-ndk
 export PATH=$ANDROID_SDK/cmdline-tools/tools/bin:$ANDROID_SDK/platform-tools:$PATH
-export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-export PATH=$JAVA_HOME/bin:$PATH
-export LC_ALL=en_US.UTF-8
-
 echo "export ANDROID_NDK=${ANDROID_NDK}" >> /etc/profile.d/vlc_env.sh && \
 echo "export ANDROID_SDK=${ANDROID_SDK}" >> /etc/profile.d/vlc_env.sh
+```
+
+java-17-openjdk-amd64 for arch x86_64
+
+```bash
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+export PATH=$JAVA_HOME/bin:$PATH
+echo "export JAVA_HOME=${JAVA_HOME}" >> /etc/profile.d/vlc_env.sh
+```
+
+java-17-openjdk-arm64 for arch arm64
+
+```bash
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-arm64
+export PATH=$JAVA_HOME/bin:$PATH
+echo "export JAVA_HOME=${JAVA_HOME}" >> /etc/profile.d/vlc_env.sh
 ```
 
 - Config git user name and email
@@ -89,10 +99,34 @@ git config --global user.email "***@***.com"
 git config --global user.name  "username"
 ```
 
+#### Build with Dockefile
+
+cd root of script_build_vlc
+
+- Create with Dockerfile
+
+```bash
+docker build -t image_vlc_android .
+```
+
+On host apple m1 arm64
+
+```bash
+docker build -t image_vlc_android --platform linux/amd64 .
+```
+
+- Run the Docker container
+
+```bash
+docker run  --name build_vlc_android  -v /path/to/vlc:/vlc -it image_vlc_android /bin/bash
+```
+
+#### Clone VLC and build
+
 - Clone the VLC repository
 
 ```bash
-cd ~ && git clone https://code.videolan.org/videolan/vlc-android.git && cd vlc-android
+cd /vlc && git clone https://code.videolan.org/videolan/vlc-android.git && cd vlc-android
 ```
 
 - Build VLC
