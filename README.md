@@ -1,17 +1,44 @@
-# VLC BUILD INSTRUCTIONS
+# 1. VLC BUILD INSTRUCTIONS
 
-## FOR ANDROID
+## 2. ANDROID
 
-### Prerequisites
+### 2.1. Prerequisites
 
 - Host OS: Ubuntu 20.04 LTS, x86_64 64-bit. 16G
 
   Github [codespaces](https://github.com/codespaces)-blank image is recommended.
 - Android [SDK](https://developer.android.com/studio) latest version.
+
+```bash
+  https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+  android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=/sdk/android-sdk-linux/ "build-tools;26.0.1" "platform-tools" "platforms;android-26" 
+```
+
 - Android [NDK](https://developer.android.com/ndk/downloads) r21e.
+
+```text
+  https://dl.google.com/android/repository/android-ndk-r21e-linux-x86_64.zip
+```
+
 - Android Studio latest version.
 
-#### Build On [codespaces](https://github.com/codespaces)-blank image
+```text
+  Android Studio Ladybug | 2024.2.1 Patch 3
+  Build #AI-242.23339.11.2421.12700392, built on November 23, 2024
+  Runtime version: 21.0.3+-79915917-b509.11 aarch64
+  VM: OpenJDK 64-Bit Server VM by JetBrains s.r.o.
+  Toolkit: sun.lwawt.macosx.LWCToolkit
+  macOS 15.2
+  GC: G1 Young Generation, G1 Concurrent GC, G1 Old Generation
+  Memory: 2048M
+  Cores: 8
+  Metal Rendering is ON
+  Registry:
+    ide.experimental.ui=true
+    i18n.locale=
+```
+
+### 2.2. Build On [codespaces](https://github.com/codespaces)-blank image
 
 Github [codespaces](https://github.com/codespaces)-blank image 8Core 32GB RAM 64GB SSD is recommended.
 
@@ -99,7 +126,7 @@ git config --global user.email "***@***.com"
 git config --global user.name  "username"
 ```
 
-#### Build with Dockefile
+### 2.3. Build with Dockefile
 
 cd root of script_build_vlc
 
@@ -135,12 +162,22 @@ docker run  --name vlc_android  -v /path/to/vlc:/vlc \
 -it hhool/vlc_android:v1.0 /bin/bash
 ```
 
-#### Clone VLC and build
+### 2.4. Clone VLC and build
 
 - Clone the VLC repository
 
 ```bash
 cd /vlc && git clone https://code.videolan.org/videolan/vlc-android.git && cd vlc-android
+```
+
+build success with special commit-id: 5821fab251c06b78241037788f1a3fc86aa8d985
+
+```text
+commit 5821fab251c06b78241037788f1a3fc86aa8d985 (HEAD -> master, origin/master, origin/HEAD)
+Author: Nicolas Pomepuy <nicolas@videolabs.io>
+Date:   Fri Dec 20 10:24:44 2024 +0100
+
+    Display the app settings when runtime permission previously denied
 ```
 
 - Build VLC
@@ -160,3 +197,9 @@ adb install -r VLC/build/outputs/apk/debug/VLC-debug.apk
 ```bash
 adb shell am start -n org.videolan.vlc/org.videolan.vlc.gui.video.VideoPlayerActivity
 ```
+
+## 3. IOS
+
+## 4. Mac
+
+## 5. Linux(Ubuntu)
