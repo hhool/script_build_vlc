@@ -106,19 +106,33 @@ cd root of script_build_vlc
 - Create with Dockerfile
 
 ```bash
-docker build -t image_vlc_android .
+docker build -t vlc_android .
 ```
 
 On host apple m1 arm64
 
 ```bash
-docker build -t image_vlc_android --platform linux/amd64 .
+docker build -t vlc_android --platform linux/amd64 .
 ```
 
 - Run the Docker container
 
 ```bash
-docker run  --name build_vlc_android  -v /path/to/vlc:/vlc -it image_vlc_android /bin/bash
+docker run  --name vlc_android  -v /path/to/vlc:/vlc -it vlc_android /bin/bash
+```
+
+- Run the Docker container on host apple m1 arm64
+
+```bash
+docker run  --name vlc_android  -v /path/to/vlc:/vlc -it --platform linux/amd64 vlc_android /bin/bash
+```
+
+- Run the Docker container with hhool/vlc-android image on dockerhub
+
+```bash
+docker run  --name vlc_android  -v /path/to/vlc:/vlc \
+-e GIT_COMMITTER_NAME="***@***.com" -e GIT_COMMITTER_EMAIL="username" \
+-it hhool/vlc_android:v1.0 /bin/bash
 ```
 
 #### Clone VLC and build

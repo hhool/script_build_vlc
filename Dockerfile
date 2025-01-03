@@ -1,6 +1,20 @@
+# Description: Dockerfile for building VLC for Android
+# Author: hhool based on the work of the VideoLAN team
+# Date: 2025-01-01
+# Version: 1.0.0
+# Usage: docker build -t vlc-android-build . && docker run -it vlc-android-build
+# Note: This Dockerfile is based on the work of the VideoLAN team, and it is
+# used to build VLC for Android.
+# vlc-android git repository: https://code.videolan.org/videolan/vlc-android
+# git address: https://code.videolan.org/videolan/vlc-android.git@5821fab251c06b78241037788f1a3fc86aa8d985
+# Reference: https://code.videolan.org/videolan/docker-images/-/blob/master/vlc-debian-android-3.0/Dockerfile?ref_type=heads
+# Reference: https://code.videolan.org/videolan/vlc-android/-/blob/master/CONTRIBUTING.md
+# Reference: https://code.videolan.org/videolan/vlc-android/-/blob/master/README.md
+# Reference: https://code.videolan.org/videolan/vlc-android/-/blob/master/README.md#building-vlc-for-android
+
 FROM debian:bookworm-20230522-slim
 
-LABEL maintainer="VideoLAN roots <roots@videolan.org>"
+LABEL maintainer="hhool <seaman.player@gmail.com>"
 
 ENV IMAGE_DATE=202306200801
 
@@ -61,5 +75,15 @@ RUN groupadd --gid ${VIDEOLAN_CI_UID} videolan && \
 ENV LANG=en_US.UTF-8
 USER videolan
 
+# We need to set the user name and email for git to avoid warnings
+# when cloning repositories, check env variables GIT_COMMITTER_NAME is set
+# or not, if not set, set it to "VLC Android"
+# This is needed to avoid warnings when cloning repositories in the build
+# process of VLC Android project in the CI pipeline of VideoLAN  (Jenkins)
+
+# check if GIT_COMMITTER_NAME is set or not, if not set, set it to "VLC Android"
+RUN if [ -z "$GIT_COMMITTER_NAME" ]; then export GIT_COMMITTER_NAME="VLC Android"; fi
+# check if GIT_COMMITTER_EMAIL is set or not, if not set, set it to "buildbot@videolan.org"
+RUN if [ -z "$GIT_COMMITTER_EMAIL" ]; then export GIT_COMMITTER_EMAIL="buildbot@videolan.org"; fi
 RUN git config --global user.name "VLC Android" && \
     git config --global user.email buildbot@videolan.org
