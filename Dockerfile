@@ -12,7 +12,7 @@
 # Reference: https://code.videolan.org/videolan/vlc-android/-/blob/master/README.md
 # Reference: https://code.videolan.org/videolan/vlc-android/-/blob/master/README.md#building-vlc-for-android
 
-FROM debian:bookworm-20230522-slim
+FROM ubuntu:20.04
 
 LABEL maintainer="hhool <seaman.player@gmail.com>"
 
@@ -21,22 +21,13 @@ ENV IMAGE_DATE=202306200801
 ENV ANDROID_NDK="/sdk/android-ndk" \
     ANDROID_SDK="/sdk/android-sdk-linux"
 
-# If someone wants to use VideoLAN docker images on a local machine and does
-# not want to be disturbed by the videolan user, we should not take an uid/gid
-# in the user range of main distributions, which means:
-# - Debian based: <1000
-# - RPM based: <500 (CentOS, RedHat, etc.)
-ARG VIDEOLAN_CI_UID=499
-
 ARG CORES=8
 
 ENV PATH=/sdk/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/:/opt/tools/bin:$PATH
 
-RUN groupadd --gid ${VIDEOLAN_CI_UID} videolan && \
-    useradd --uid ${VIDEOLAN_CI_UID} --gid videolan --create-home --shell /bin/bash videolan && \
-    echo "videolan:videolan" | chpasswd && \
-    apt-get update && \
+RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && \
+    apt-get install ssh -y && \
     apt-get install --no-install-suggests --no-install-recommends -y \
     openjdk-17-jdk-headless ca-certificates autoconf m4 automake ant autopoint bison \
     flex build-essential libtool libtool-bin patch pkg-config cmake meson \
@@ -70,10 +61,13 @@ RUN groupadd --gid ${VIDEOLAN_CI_UID} videolan && \
     cd / && \
     cd sdk/android-sdk-linux && \
     cmdline-tools/bin/sdkmanager --sdk_root=/sdk/android-sdk-linux/ "build-tools;26.0.1" "platform-tools" "platforms;android-26" && \
-    chown -R videolan /sdk
+    apt update && apt install -y python3-pip && pip3 install meson==0.56 && \
+    curl -sL https://deb.nodesource.com/setup_14.x | bash - && apt-get install -y nodejs && \
+    curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | tee /usr/share/keyrings/yarnkey.gpg >/dev/null && \
+    echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | tee /etc/apt/sources.list.d/yarn.list && \
+    apt-get update && apt-get install yarn
 
 ENV LANG=en_US.UTF-8
-USER videolan
 
 # We need to set the user name and email for git to avoid warnings
 # when cloning repositories, check env variables GIT_COMMITTER_NAME is set

@@ -59,7 +59,12 @@ ANDROID_NDK_SHA256=ad7ce5467e18d40050dc51b8e7affc3e635c85bd8c59be62de32352328ed4
     rm -f $SDK_TOOLS_FILENAME && \
     cd / && \
     cd sdk/android-sdk-linux && \
-    cmdline-tools/bin/sdkmanager --sdk_root=/sdk/android-sdk-linux/ "build-tools;26.0.1" "platform-tools" "platforms;android-26"
+    cmdline-tools/bin/sdkmanager --sdk_root=/sdk/android-sdk-linux/ "build-tools;26.0.1" "platform-tools" "platforms;android-26" && \
+    apt update && apt install python3-pip -y && pip3 install meson==0.56 && \
+    curl -sL https://deb.nodesource.com/setup_14.x | bash - && apt-get install -y nodejs && \
+    curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | tee /usr/share/keyrings/yarnkey.gpg >/dev/null && \
+    echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | tee /etc/apt/sources.list.d/yarn.list && \
+    apt-get update && apt-get install yarn
 ```
 
 - Export environment variables
@@ -106,33 +111,33 @@ cd root of script_build_vlc
 - Create with Dockerfile
 
 ```bash
-docker build -t vlc_android .
+docker build -t vlc_android_ubuntu2004 .
 ```
 
 On host apple m1 arm64
 
 ```bash
-docker build -t vlc_android --platform linux/amd64 .
+docker build -t vlc_android_ubuntu2004 --platform linux/amd64 .
 ```
 
 - Run the Docker container
 
 ```bash
-docker run  --name vlc_android  -v /path/to/vlc:/vlc -it vlc_android /bin/bash
+docker run  --name vlc_android_ubuntu2004  -v /path/to/vlc:/vlc -it vlc_android_ubuntu2004 /bin/bash
 ```
 
 - Run the Docker container on host apple m1 arm64
 
 ```bash
-docker run  --name vlc_android  -v /path/to/vlc:/vlc -it --platform linux/amd64 vlc_android /bin/bash
+docker run  --name vlc_android_ubuntu2004  -v /path/to/vlc:/vlc -it --platform linux/amd64 vlc_android_ubuntu2004 /bin/bash
 ```
 
 - Run the Docker container with hhool/vlc-android image on dockerhub
 
 ```bash
-docker run  --name vlc_android  -v /path/to/vlc:/vlc \
+docker run  --name vlc_android_ubuntu2004  -v /path/to/vlc:/vlc \
 -e GIT_COMMITTER_NAME="***@***.com" -e GIT_COMMITTER_EMAIL="username" \
--it hhool/vlc_android:v1.0 /bin/bash
+-it hhool/vlc_android_ubuntu2004:latest /bin/bash
 ```
 
 #### Clone VLC and build
@@ -140,13 +145,41 @@ docker run  --name vlc_android  -v /path/to/vlc:/vlc \
 - Clone the VLC repository
 
 ```bash
-cd /vlc && git clone https://code.videolan.org/videolan/vlc-android.git && cd vlc-android
+cd /vlc && git clone https://code.videolan.org/videolan/vlc-android.git && cd vlc-android && git checkout 5821fab251c06b78241037788f1a3fc86aa8d985
+```
+
+build success with special commit-id: 5821fab251c06b78241037788f1a3fc86aa8d985
+
+```text
+commit 5821fab251c06b78241037788f1a3fc86aa8d985 (HEAD -> master, origin/master, origin/HEAD)
+Author: Nicolas Pomepuy <nicolas@videolabs.io>
+Date:   Fri Dec 20 10:24:44 2024 +0100
+
+    Display the app settings when runtime permission previously denied
 ```
 
 - Build VLC
 
 ```bash
 ./buildsystem/compile.sh
+```
+
+release build
+
+```bash
+./buildsystem/compile.sh release -a x86_64 && ./buildsystem/compile.sh -b release -a x86 && ./buildsystem/compile.sh  -b release -a arm64 && ./buildsystem/compile -b release -a arm
+```
+
+build with remoteaccess
+
+```bash
+./buildsystem/compile_remoteaccess.sh
+```
+
+Module not found: Error: Can't resolve '@popperjs/core'
+
+```bash
+npm install @popperjs/core
 ```
 
 - Install VLC
